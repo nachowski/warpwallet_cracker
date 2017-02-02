@@ -11,21 +11,21 @@ import (
 	"math/rand"
 	"github.com/vsergeev/btckeygenie/btckey"
 )
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+// source: http://stackoverflow.com/a/31832326/1025599
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const (
     letterIdxBits = 6                    // 6 bits to represent a letter index
     letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
     letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-var src = rand.NewSource(time.Now().UnixNano())
-
-func RandStringBytesMaskImprSrc(n int) string {
+func RandStringBytesMaskImpr(n int) string {
     b := make([]byte, n)
-    // A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-    for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+    // A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
+    for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
         if remain == 0 {
-            cache, remain = src.Int63(), letterIdxMax
+            cache, remain = rand.Int63(), letterIdxMax
         }
         if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
             b[i] = letterBytes[idx]
@@ -37,6 +37,7 @@ func RandStringBytesMaskImprSrc(n int) string {
 
     return string(b)
 }
+// end source
 
 func main () {
 	var address string
@@ -59,10 +60,13 @@ func main () {
 	tries := 0
 	start := time.Now()
 	for {
-		passphraseValue := RandStringBytesMaskImprSrc(8)
+		passphraseValue := RandStringBytesMaskImpr(8)
 		bruteforce(passphraseValue, saltValue, address);
 		tries += 1
-		fmt.Printf("\rTried %d passphrases in %s [last passphrase: %s]", tries, time.Since(start), passphraseValue)
+		
+		if tries % 1000 == 1 { // only update every 1000 attempts
+			fmt.Printf("\rTried %d passphrases in %s [last passphrase: %s]", tries, time.Since(start), passphraseValue)
+		}
 	}
 }
 
@@ -89,9 +93,9 @@ func bruteforce(passphraseValue string, saltValue string, address string) {
 	}
 	
 	address_uncompressed := priv.ToAddressUncompressed()
-	wif := priv.ToWIF()
 	
 	if (address_uncompressed == address) {
+		wif := priv.ToWIF()
 		fmt.Printf("Found! Passphrase      %s\n", passphraseValue)
 		fmt.Printf("Bitcoin Address (Uncompressed)      %s\n", address_uncompressed)
 		fmt.Printf("Private Key WIF (Uncompressed)      %s\n", wif)
