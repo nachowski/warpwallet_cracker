@@ -40,6 +40,8 @@ func RandStringBytesMaskImpr(n int) string {
 // end source
 
 func main () {
+	rand.Seed(time.Now().UTC().UnixNano()) // seed rand
+
 	var address string
 	saltValue := ""
 	
