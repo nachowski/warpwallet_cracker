@@ -66,7 +66,7 @@ func main () {
 		bruteforce(passphraseValue, saltValue, address);
 		tries += 1
 		
-		if tries % 1000 == 1 { // only update every 1000 attempts
+		if tries % 60 == 1 { // only update every 60 attempts
 			fmt.Printf("\rTried %d passphrases in %s [last passphrase: %s]", tries, time.Since(start), passphraseValue)
 		}
 	}
