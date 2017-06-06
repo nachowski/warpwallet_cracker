@@ -12,35 +12,18 @@ import (
 	"github.com/vsergeev/btckeygenie/btckey"
 )
 
-// source: http://stackoverflow.com/a/31832326/1025599
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const (
-    letterIdxBits = 6                    // 6 bits to represent a letter index
-    letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-    letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-func RandStringBytesMaskImpr(n int) string {
+const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+func random(r *rand.Rand, n int) string {
     b := make([]byte, n)
-    // A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
-    for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
-        if remain == 0 {
-            cache, remain = rand.Int63(), letterIdxMax
-        }
-        if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-            b[i] = letterBytes[idx]
-            i--
-        }
-        cache >>= letterIdxBits
-        remain--
+	for i := range b {
+        b[i] = letterBytes[r.Intn(62)]
     }
 
     return string(b)
 }
-// end source
 
 func main () {
-	rand.Seed(time.Now().UTC().UnixNano()) // seed rand
+	r := rand.New(rand.NewSource(time.Now().Unix()))
 
 	var address string
 	saltValue := ""
@@ -62,7 +45,7 @@ func main () {
 	tries := 0
 	start := time.Now()
 	for {
-		passphraseValue := RandStringBytesMaskImpr(8)
+		passphraseValue := random(r, 8)
 		result := bruteforce(passphraseValue, saltValue, address);
 		if result != "" {
 			fmt.Printf("Found! Passphrase %s\n", passphraseValue)
