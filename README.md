@@ -19,4 +19,5 @@ Run (*nix):
 `./run.sh`
 
 Run unit tests and benchmark:
+
 `go test -bench=.`
