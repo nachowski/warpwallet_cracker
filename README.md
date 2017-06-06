@@ -6,6 +6,17 @@ Build:
 
 `go build warpwallet_cracker.go`
 
-Run:
+Usage:
 
-`warpwallet_cracker.exe 1MkupVKiCik9iyfnLrJoZLx9RH4rkF3hnA a@b.c`
+`warpwallet_cracker [Address] [Salt - optional]`
+
+Run (Windows):
+
+`run.bat`
+
+Run (*nix):
+
+`./run.sh`
+
+Run unit tests and benchmark:
+`go test -bench=.`

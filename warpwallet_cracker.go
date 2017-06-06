@@ -63,16 +63,18 @@ func main () {
 	start := time.Now()
 	for {
 		passphraseValue := RandStringBytesMaskImpr(8)
-		bruteforce(passphraseValue, saltValue, address);
-		tries += 1
-		
-		if tries % 60 == 1 { // only update every 60 attempts
+		result := bruteforce(passphraseValue, saltValue, address);
+		if result != "" {
+			fmt.Printf("Found! Passphrase %s\n", passphraseValue)
+			os.Exit(0)
+		} else {
+			tries += 1
 			fmt.Printf("\rTried %d passphrases in %s [last passphrase: %s]", tries, time.Since(start), passphraseValue)
 		}
 	}
 }
 
-func bruteforce(passphraseValue string, saltValue string, address string) {
+func bruteforce(passphraseValue string, saltValue string, address string) string {
 	var priv btckey.PrivateKey
 	var err error
 	
@@ -91,16 +93,14 @@ func bruteforce(passphraseValue string, saltValue string, address string) {
 	err = priv.FromBytes(result.Bytes())
 	if err != nil {
 		fmt.Printf("Error importing private key: %s [%s]\n", err, passphraseValue)
-		os.Exit(0)
+		return ""
 	}
 	
 	address_uncompressed := priv.ToAddressUncompressed()
 	
 	if (address_uncompressed == address) {
-		wif := priv.ToWIF()
-		fmt.Printf("Found! Passphrase      %s\n", passphraseValue)
-		fmt.Printf("Bitcoin Address (Uncompressed)      %s\n", address_uncompressed)
-		fmt.Printf("Private Key WIF (Uncompressed)      %s\n", wif)
-		os.Exit(0)
+		return passphraseValue
 	}
+	
+	return ""
 }
