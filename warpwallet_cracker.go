@@ -1,7 +1,7 @@
 package main
 
 import (
-    "golang.org/x/crypto/pbkdf2"
+  pbkdf2 "github.com/ctz/go-fastpbkdf2"
 	"golang.org/x/crypto/scrypt"
 	"bytes"
 	"crypto/sha256"
@@ -27,7 +27,7 @@ func main () {
 
 	var address string
 	saltValue := ""
-	
+
 	if len(os.Args) >= 2 {
 		address = os.Args[1]
 		if len(os.Args) == 3 {
@@ -39,9 +39,9 @@ func main () {
 		fmt.Printf("Usage: %s [Address] [Salt - optional]\n\n", os.Args[0])
 		os.Exit(0)
 	}
-	
+
 	fmt.Printf("Using address \"%s\" and salt \"%s\"\n", address, saltValue)
-	
+
 	tries := 0
 	start := time.Now()
 	for {
@@ -60,7 +60,7 @@ func main () {
 func bruteforce(passphraseValue string, saltValue string, address string) string {
 	var priv btckey.PrivateKey
 	var err error
-	
+
     pass := fmt.Sprint(passphraseValue, "\x01")
     salt := fmt.Sprint(saltValue, "\x01")
     key, _ := scrypt.Key([]byte(pass), []byte(salt), 262144, 8, 1, 32)
@@ -78,12 +78,12 @@ func bruteforce(passphraseValue string, saltValue string, address string) string
 		fmt.Printf("Error importing private key: %s [%s]\n", err, passphraseValue)
 		return ""
 	}
-	
+
 	address_uncompressed := priv.ToAddressUncompressed()
-	
+
 	if (address_uncompressed == address) {
 		return passphraseValue
 	}
-	
+
 	return ""
 }
