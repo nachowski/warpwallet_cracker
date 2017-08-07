@@ -4,6 +4,10 @@ A brute-force cracker in Go for the WarpWallet Challenge 2: https://keybase.io/w
 # Usage
 
 ```
+$ go get ./...
+---
+$ go build warpwallet_cracker.go
+---
 $ ./run.sh 
 Using address "1MkupVKiCik9iyfnLrJoZLx9RH4rkF3hnA" and salt "a@b.c"
 Tried 4 passphrases in 2.269448485s [last passphrase: 2zZM3L1C]
