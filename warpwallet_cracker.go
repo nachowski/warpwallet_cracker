@@ -12,6 +12,7 @@ import (
 	"github.com/vsergeev/btckeygenie/btckey"
 )
 
+var c chan []byte // goroutine channel
 const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 func random(r *rand.Rand, n int) string {
     b := make([]byte, n)
@@ -24,6 +25,7 @@ func random(r *rand.Rand, n int) string {
 
 func main () {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
+  c = make(chan []byte)
 
 	var address string
 	saltValue := ""
@@ -58,20 +60,17 @@ func main () {
 }
 
 func bruteforce(passphraseValue string, saltValue string, address string) string {
-	var priv btckey.PrivateKey
-	var err error
+  var priv btckey.PrivateKey
+  var err error
+  go doScrypt(fmt.Sprint(passphraseValue, "\x01"), fmt.Sprint(saltValue, "\x01"), c)
+  go doPbkdf2(fmt.Sprint(passphraseValue, "\x02"), fmt.Sprint(saltValue, "\x02"), c)
 
-    pass := fmt.Sprint(passphraseValue, "\x01")
-    salt := fmt.Sprint(saltValue, "\x01")
-    key, _ := scrypt.Key([]byte(pass), []byte(salt), 262144, 8, 1, 32)
-    pass = fmt.Sprint(passphraseValue, "\x02")
-    salt = fmt.Sprint(saltValue, "\x02")
-    key2 := pbkdf2.Key([]byte(pass), []byte(salt), 65536, 32, sha256.New)
+  key1, key2 := <-c, <-c
 
-    var result bytes.Buffer
-    for i := 0; i < len(key); i++ {
-        result.WriteByte(key[i] ^ key2[i])
-    }
+  var result bytes.Buffer
+  for i := 0; i < len(key1); i++ {
+    result.WriteByte(key1[i] ^ key2[i]) // TODO fastXOR?
+  }
 
 	err = priv.FromBytes(result.Bytes())
 	if err != nil {
@@ -79,11 +78,19 @@ func bruteforce(passphraseValue string, saltValue string, address string) string
 		return ""
 	}
 
-	address_uncompressed := priv.ToAddressUncompressed()
-
-	if (address_uncompressed == address) {
+	if (priv.ToAddressUncompressed() == address) {
 		return passphraseValue
 	}
 
 	return ""
+}
+
+func doScrypt(pass string, salt string, c chan []byte) {
+   scryptKey, _ := scrypt.Key([]byte(pass), []byte(salt), 262144, 8, 1, 32)
+   c <- scryptKey
+}
+
+func doPbkdf2(pass string, salt string, c chan []byte) {
+  pbkdf2Key := pbkdf2.Key([]byte(pass), []byte(salt), 65536, 32, sha256.New)
+  c <- pbkdf2Key
 }
