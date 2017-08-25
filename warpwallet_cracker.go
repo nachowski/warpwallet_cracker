@@ -3,7 +3,7 @@ package main
 import (
   pbkdf2 "github.com/ctz/go-fastpbkdf2"
 	"golang.org/x/crypto/scrypt"
-	"bytes"
+  "unsafe"
 	"crypto/sha256"
 	"fmt"
 	"time"
@@ -12,6 +12,7 @@ import (
 	"github.com/vsergeev/btckeygenie/btckey"
 )
 
+const wordSize = int(unsafe.Sizeof(uintptr(0)))
 var c chan []byte // goroutine channel
 const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 func random(r *rand.Rand, n int) string {
@@ -67,12 +68,10 @@ func bruteforce(passphraseValue string, saltValue string, address string) string
 
   key1, key2 := <-c, <-c
 
-  var result bytes.Buffer
-  for i := 0; i < len(key1); i++ {
-    result.WriteByte(key1[i] ^ key2[i]) // TODO fastXOR?
-  }
+  result := make([]byte, 32)
+  fastXORWords(result, key1, key2)
 
-	err = priv.FromBytes(result.Bytes())
+	err = priv.FromBytes(result)
 	if err != nil {
 		fmt.Printf("Error importing private key: %s [%s]\n", err, passphraseValue)
 		return ""
@@ -93,4 +92,16 @@ func doScrypt(pass string, salt string, c chan []byte) {
 func doPbkdf2(pass string, salt string, c chan []byte) {
   pbkdf2Key := pbkdf2.Key([]byte(pass), []byte(salt), 65536, 32, sha256.New)
   c <- pbkdf2Key
+}
+
+// fastXORWords XORs multiples of 4 or 8 bytes (depending on architecture.)
+// The arguments are assumed to be of equal length.
+func fastXORWords(dst, a, b []byte) {
+	dw := *(*[]uintptr)(unsafe.Pointer(&dst))
+	aw := *(*[]uintptr)(unsafe.Pointer(&a))
+	bw := *(*[]uintptr)(unsafe.Pointer(&b))
+	n := len(b) / wordSize
+	for i := 0; i < n; i++ {
+		dw[i] = aw[i] ^ bw[i]
+	}
 }
