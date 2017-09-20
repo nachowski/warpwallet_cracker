@@ -55,7 +55,9 @@ func main () {
 			os.Exit(0)
 		} else {
 			tries += 1
-			fmt.Printf("\rTried %d passphrases in %s [last passphrase: %s]", tries, time.Since(start), passphraseValue)
+      timeElapsed := time.Since(start)
+      hashRate := float64(tries) / (timeElapsed.Seconds())
+			fmt.Printf("\rspeed=%.2fh/s, last=%s, tries=%d, elapsed=%s", hashRate, passphraseValue, tries, timeElapsed)
 		}
 	}
 }
