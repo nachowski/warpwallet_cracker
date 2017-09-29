@@ -16,6 +16,13 @@ Tried 4 passphrases in 2.269448485s [last passphrase: 2zZM3L1C]
 # Performance
 On a consumer MacBook Pro this achieves ~1.1 hash/sec. At this hashrate it is [not feasible](https://www.wolframalpha.com/input/?i=(62%5E8+%2F+1.1)+seconds+to+years) to enumerate the entire keyspace of 62^8 hashes.
 
+Ideas for further improvements:
+- Explore using SSE2 for faster scrypt
+- Use all cores of the CPU
+- Build a bloom filter containing past attempts (is a bloom filter lookup faster than a hash attempt?)
+- Figure out a way to share the bloom filter with other crackers
+- Deterministic key generation for better search space partitioning (instead of seeding rand with a unix timestamp)
+
 # How-to
 Build:
 
