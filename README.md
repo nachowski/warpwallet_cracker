@@ -14,7 +14,7 @@ Tried 4 passphrases in 2.269448485s [last passphrase: 2zZM3L1C]
 ```
 
 # Performance
-This script has been optimized for speed. On a MacBook Pro this achieves ~1.1 hash/sec. At this hashrate it is [not feasible](https://www.wolframalpha.com/input/?i=(62%5E8+%2F+1.1)+seconds+to+years) to enumerate the entire keyspace of 62^8 hashes.
+This script has been optimized for speed. On a MacBook Pro this achieves ~1.1 hash/sec/core (with hyperthreading enabled). At this hashrate it is [not feasible](https://www.wolframalpha.com/input/?i=(62%5E8+%2F+1.1)+seconds+to+years) to enumerate the entire keyspace of 62^8 hashes.
 
 For example: if you run this script for a month, there is a 1 in ~76M chance of your RNG gifting you 20 BTC.
 
