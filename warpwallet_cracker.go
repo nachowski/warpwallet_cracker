@@ -10,15 +10,16 @@ import (
 	"os"
 	"math/rand"
 	"github.com/vsergeev/btckeygenie/btckey"
+        "strconv"
 )
 
 const wordSize = int(unsafe.Sizeof(uintptr(0)))
 var c chan []byte // goroutine channel
-const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-func random(r *rand.Rand, n int) string {
+
+func random(r *rand.Rand, n int, letterBytes string, letterSize int) string {
     b := make([]byte, n)
 	for i := range b {
-        b[i] = letterBytes[r.Intn(62)]
+        b[i] = letterBytes[r.Intn(letterSize)]
     }
 
     return string(b)
@@ -28,27 +29,43 @@ func main () {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
   c = make(chan []byte)
 
+	var err error
 	var address string
 	saltValue := ""
+        letterBytes := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        passlen := 8
+        passlenstr := "8"
+
 
 	if len(os.Args) >= 2 {
 		address = os.Args[1]
-		if len(os.Args) == 3 {
+		if len(os.Args) >= 3 {
 			saltValue = os.Args[2]
 		} else {
 			saltValue = "";
 		}
+		if len(os.Args) >= 4 {
+			passlenstr = os.Args[3]
+		   	passlen,err = strconv.Atoi(passlenstr)
+			if err != nil{
+	        		panic(err)
+                        }
+		}
+		if len(os.Args) >= 5 {
+			letterBytes = os.Args[4]
+		}
 	} else {
-		fmt.Printf("Usage: %s [Address] [Salt - optional]\n\n", os.Args[0])
+		fmt.Printf("Usage: %s [Address] [Salt - optional] [Passphrase Length] [Whitelist Letters - optional]\n\n", os.Args[0])
 		os.Exit(0)
 	}
+        letterSize := len(letterBytes)
 
-	fmt.Printf("Using address \"%s\" and salt \"%s\"\n", address, saltValue)
+	fmt.Printf("Using address \"%s\" and salt \"%s\" length of \"%s\" and letterdict \"%s\" \n", address, saltValue, passlenstr,letterBytes)
 
 	tries := 0
 	start := time.Now()
 	for {
-		passphraseValue := random(r, 8)
+		passphraseValue := random(r, passlen, letterBytes, letterSize)
 		result := bruteforce(passphraseValue, saltValue, address);
 		if result != "" {
 			fmt.Printf("Found! Passphrase %s\n", passphraseValue)
