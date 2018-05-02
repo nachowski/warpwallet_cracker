@@ -1,6 +1,9 @@
 # warpwallet_cracker
 A brute-force cracker in Go for the WarpWallet Challenge 2: https://keybase.io/warp/
 
+# Challenge
+The WarpWallet Challenge 2 has now expired. The correct passphrase was _HY4r0uWn_. (private key _5J34oCttqfswmkGnX5NWrU19xkZPNu4a2bRJHW2UdiAU7QpTSsN_)
+
 # Usage
 
 ```
